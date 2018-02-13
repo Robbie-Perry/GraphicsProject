@@ -433,21 +433,7 @@ namespace asgn5v1
 			scrnpts = new double[numpts,4];
 			setIdentity(ctrans,4,4);  //initialize transformation matrix to identity
 
-            //Reflect about x-axis
-            ctrans = MultiplyMatricies(ctrans, GetReflectionMatrix(1, -1, 1));
-            //Translate such that centre is at the origin
-            ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(vertices[0, 0] * -1, vertices[0, 1], vertices[0, 2] * -1));
-
-            double shapeHeight = vertices[0, 1] * 2;
-            double screenWidth = Screen.FromControl(this).Bounds.Width;
-            double screenHeight = Screen.FromControl(this).Bounds.Height;
-            double factor = (screenHeight / 2) / shapeHeight;
-
-            //Scale such that the height is half the screen height
-            ctrans = MultiplyMatricies(ctrans, GetScalingMatrix(factor, factor, factor));
-
-            //Translate to the centre of the screen
-            ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(screenWidth / 2, screenHeight / 2, 0));
+			InitializeNewShape();
 
             return true;
 		} // end of GetNewData
@@ -502,7 +488,26 @@ namespace asgn5v1
 			
 		}
 
-        private double[,] MultiplyMatricies(double[,] A, double[,] B)
+		private void InitializeNewShape()
+		{
+			//Reflect about x-axis
+			ctrans = MultiplyMatricies(ctrans, GetReflectionMatrix(1, -1, 1));
+			//Translate such that centre is at the origin
+			ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(vertices[0, 0] * -1, vertices[0, 1], vertices[0, 2] * -1));
+
+			double shapeHeight = vertices[0, 1] * 2;
+			double screenWidth = Screen.FromControl(this).Bounds.Width;
+			double screenHeight = Screen.FromControl(this).Bounds.Height;
+			double factor = (screenHeight / 2) / shapeHeight;
+
+			//Scale such that the height is half the screen height
+			ctrans = MultiplyMatricies(ctrans, GetScalingMatrix(factor, factor, factor));
+
+			//Translate to the centre of the screen
+			ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(screenWidth / 2, screenHeight / 2, 0));
+		}
+
+		private double[,] MultiplyMatricies(double[,] A, double[,] B)
         {
             if (A.GetLength(0) == B.GetLength(1))
             {

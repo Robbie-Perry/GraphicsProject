@@ -564,24 +564,28 @@ namespace asgn5v1
 		{
 			if (e.Button == transleftbtn)
 			{
-                
+				ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(-75, 0, 0));
 				Refresh();
 			}
 			if (e.Button == transrightbtn) 
 			{
+				ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(75, 0, 0));
 				Refresh();
 			}
 			if (e.Button == transupbtn)
 			{
+				ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(0, -35, 0));
 				Refresh();
 			}
 			
 			if(e.Button == transdownbtn)
 			{
+				ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(0, 35, 0));
 				Refresh();
 			}
 			if (e.Button == scaleupbtn) 
 			{
+				double[,] centre = vertices;
 				Refresh();
 			}
 			if (e.Button == scaledownbtn) 

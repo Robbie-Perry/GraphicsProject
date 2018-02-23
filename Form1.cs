@@ -560,6 +560,36 @@ namespace asgn5v1
             };
         }
 
+        private double[,] GetRoatationMatrix(char axis, double angle)
+        {
+            switch (axis)
+            {
+                case 'x':
+                    return new double[,] {
+                        { 1, 0, 0, 0 },
+                        { 0, Math.Cos(angle), -1 *Math.Sin(angle), 0 },
+                        { 0, Math.Sin(angle), Math.Cos(angle), 0 },
+                        { 0, 0, 0, 1 }
+                    };
+                case 'y':
+                    return new double[,] {
+                        { Math.Cos(angle), 0, Math.Sin(angle), 0 },
+                        { 0, 1, 0, 0 },
+                        { -1 * Math.Sin(angle), 0, Math.Cos(angle), 0 },
+                        { 0, 0, 0, 1 }
+                    };
+                case 'z':
+                    return new double[,] {
+                        { Math.Cos(angle), Math.Sin(angle), 0, 0 },
+                        { -1 * Math.Sin(angle), Math.Cos(angle), 0, 0 },
+                        { 0, 0, 1, 0 },
+                        { 0, 0, 0, 1 }
+                    };
+                default:
+                    return null;
+            }
+        }
+
         private void toolBar1_ButtonClick(object sender, System.Windows.Forms.ToolBarButtonClickEventArgs e)
 		{
 			if (e.Button == transleftbtn)
@@ -585,25 +615,39 @@ namespace asgn5v1
 			}
 			if (e.Button == scaleupbtn) 
 			{
-				double[,] centre = vertices;
-				Refresh();
+                ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(-1 * scrnpts[0, 0], -1 * scrnpts[0, 1], -1 * scrnpts[0, 2]));
+                ctrans = MultiplyMatricies(ctrans, GetScalingMatrix(1.1, 1.1, 1.1));
+                ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(scrnpts[0, 0],  scrnpts[0, 1], scrnpts[0, 2]));
+                Refresh();
 			}
 			if (e.Button == scaledownbtn) 
 			{
-				Refresh();
+                ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(-1 * scrnpts[0, 0], -1 * scrnpts[0, 1], -1 * scrnpts[0, 2]));
+                ctrans = MultiplyMatricies(ctrans, GetScalingMatrix(0.9, 0.9, 0.9));
+                ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(scrnpts[0, 0], scrnpts[0, 1], scrnpts[0, 2]));
+                Refresh();
 			}
 			if (e.Button == rotxby1btn) 
 			{
-				
-			}
+                ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(0, -1 * scrnpts[0, 1], -1 * scrnpts[0, 2]));
+                ctrans = MultiplyMatricies(ctrans, GetRoatationMatrix('x', 0.05));
+                ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(0, scrnpts[0, 1], scrnpts[0, 2]));
+                Refresh();
+            }
 			if (e.Button == rotyby1btn) 
 			{
-				
-			}
+                ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(-1 * scrnpts[0, 0], 0, -1 * scrnpts[0, 2]));
+                ctrans = MultiplyMatricies(ctrans, GetRoatationMatrix('y', 0.05));
+                ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(scrnpts[0, 0], 0, scrnpts[0, 2]));
+                Refresh();
+            }
 			if (e.Button == rotzby1btn) 
 			{
-				
-			}
+                ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(-1 * scrnpts[0, 0], -1 * scrnpts[0, 1], 0));
+                ctrans = MultiplyMatricies(ctrans, GetRoatationMatrix('z', 0.05));
+                ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(scrnpts[0, 0], scrnpts[0, 1], 0));
+                Refresh();
+            }
 
 			if (e.Button == rotxbtn) 
 			{

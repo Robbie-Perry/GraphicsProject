@@ -47,7 +47,13 @@ namespace asgn5v1
 		private System.Windows.Forms.ToolBarButton toolBarButton5;
 		private System.Windows.Forms.ToolBarButton resetbtn;
 		private System.Windows.Forms.ToolBarButton exitbtn;
+
+
+        private System.Timers.Timer timer;
+        private char RotationAxis;
 		int[,] lines;
+
+        int BaselineIndex = -1;
 
 		public Transformer()
 		{
@@ -75,7 +81,9 @@ namespace asgn5v1
 			MenuItem miAbout = new MenuItem("&About",
 				new EventHandler(MenuAboutOnClick));
 			Menu = new MainMenu(new MenuItem[] {miFile, miAbout});
-
+            timer = new System.Timers.Timer();
+            timer.Interval = 1;
+            timer.Elapsed += new System.Timers.ElapsedEventHandler(RotateContinuously);
 			
 		}
 
@@ -382,8 +390,10 @@ namespace asgn5v1
 
 		void RestoreInitialImage()
 		{
-			Invalidate();
-		} // end of RestoreInitialImage
+            setIdentity(ctrans, 4, 4);
+            InitializeNewShape();
+            Invalidate();
+		}
 
 		bool GetNewData()
 		{
@@ -450,6 +460,10 @@ namespace asgn5v1
 				vertices[numpts,0]=double.Parse(text[0]);
 				if (vertices[numpts,0] < 0.0d) break;
 				vertices[numpts,1]=double.Parse(text[1]);
+                if (BaselineIndex == -1 && vertices[numpts, 1] == 0)
+                {
+                    BaselineIndex = numpts;
+                }
 				vertices[numpts,2]=double.Parse(text[2]);
 				vertices[numpts,3] = 1.0d;
 				numpts++;						
@@ -550,6 +564,16 @@ namespace asgn5v1
             };
         }
 
+        private double[,] GetShearingMatrix(double f)
+        {
+            return new double[,] {
+                { 1, 0, 0, 0 },
+                { f, 1, 0, 0 },
+                { 0, 0, 1, 0 },
+                { 0, 0, 0, 1 }
+            };
+        }
+
         private double[,] GetReflectionMatrix(double x, double y, double z)
         {
             return new double[,] {
@@ -592,7 +616,12 @@ namespace asgn5v1
 
         private void toolBar1_ButtonClick(object sender, System.Windows.Forms.ToolBarButtonClickEventArgs e)
 		{
-			if (e.Button == transleftbtn)
+            if (timer.Enabled)
+            {
+                timer.Stop();
+            }
+
+            if (e.Button == transleftbtn)
 			{
 				ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(-75, 0, 0));
 				Refresh();
@@ -651,27 +680,34 @@ namespace asgn5v1
 
 			if (e.Button == rotxbtn) 
 			{
-				
-			}
-			if (e.Button == rotybtn) 
-			{
-				
-			}
-			
+                ToggleRotation('x');
+            }
+
+			if (e.Button == rotybtn)
+            {
+                ToggleRotation('y');
+            }
+
 			if (e.Button == rotzbtn) 
 			{
-				
-			}
+                ToggleRotation('z');
+            }
 
 			if(e.Button == shearleftbtn)
 			{
-				Refresh();
+                ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(-scrnpts[BaselineIndex, 0], -scrnpts[BaselineIndex, 1], -scrnpts[BaselineIndex, 2]));
+                ctrans = MultiplyMatricies(ctrans, GetShearingMatrix(0.1));
+                ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(scrnpts[BaselineIndex, 0], scrnpts[BaselineIndex, 1], scrnpts[BaselineIndex, 2]));
+                Refresh();
 			}
 
 			if (e.Button == shearrightbtn) 
 			{
-				Refresh();
-			}
+                ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(-scrnpts[BaselineIndex, 0], -scrnpts[BaselineIndex, 1], -scrnpts[BaselineIndex, 2]));
+                ctrans = MultiplyMatricies(ctrans, GetShearingMatrix(-0.1));
+                ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(scrnpts[BaselineIndex, 0], scrnpts[BaselineIndex, 1], scrnpts[BaselineIndex, 2]));
+                Refresh();
+            }
 
 			if (e.Button == resetbtn)
 			{
@@ -682,11 +718,35 @@ namespace asgn5v1
 			{
 				Close();
 			}
-
 		}
 
-		
-	}
+        private void RotateContinuously(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            switch (RotationAxis)
+            {
+                case 'x':
+                    ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(0, -1 * scrnpts[0, 1], -1 * scrnpts[0, 2]));
+                    ctrans = MultiplyMatricies(ctrans, GetRoatationMatrix('x', 0.05));
+                    ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(0, scrnpts[0, 1], scrnpts[0, 2]));
+                    break;
+                case 'y':
+                    ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(-1 * scrnpts[0, 0], 0, -1 * scrnpts[0, 2]));
+                    ctrans = MultiplyMatricies(ctrans, GetRoatationMatrix('y', 0.05));
+                    ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(scrnpts[0, 0], 0, scrnpts[0, 2]));
+                    break;
+                case 'z':
+                    ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(-1 * scrnpts[0, 0], -1 * scrnpts[0, 1], 0));
+                    ctrans = MultiplyMatricies(ctrans, GetRoatationMatrix('z', 0.05));
+                    ctrans = MultiplyMatricies(ctrans, GetTranslationMatrix(scrnpts[0, 0], scrnpts[0, 1], 0));
+                    break;
+            }
+            Refresh();
+        }
 
-	
+        private void ToggleRotation(char axis)
+        {
+            RotationAxis = axis;
+            timer.Start();
+        }
+    }
 }

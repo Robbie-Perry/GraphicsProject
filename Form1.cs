@@ -440,10 +440,33 @@ namespace asgn5v1
 				MessageBox.Show("***Failed to Open Line Data File***");
 				return false;
 			}
-			scrnpts = new double[numpts,4];
-			setIdentity(ctrans,4,4);  //initialize transformation matrix to identity
 
-			InitializeNewShape();
+            scrnpts = new double[numpts,4];
+			setIdentity(ctrans,4,4);  //initialize transformation matrix to identity
+            
+            for (int i = 0; i < numlines; i++)
+            {
+                double x1 = vertices[lines[i, 0], 0];
+                double y1 = vertices[lines[i, 0], 1];
+                double x2 = vertices[lines[i, 1], 0];
+                double y2 = vertices[lines[i, 1], 1];
+                
+                if (y1 == y2)
+                {
+                    if (BaselineIndex != -1)
+                    {
+                        if (vertices[lines[i, 0], 1] < vertices[lines[BaselineIndex, 0], 1])
+                        {
+                            BaselineIndex = lines[i, 0];
+                        }
+                    } else
+                    {
+                        BaselineIndex = lines[i, 0];
+                    }
+                }
+            }
+
+            InitializeNewShape();
 
             return true;
 		} // end of GetNewData
@@ -460,10 +483,7 @@ namespace asgn5v1
 				vertices[numpts,0]=double.Parse(text[0]);
 				if (vertices[numpts,0] < 0.0d) break;
 				vertices[numpts,1]=double.Parse(text[1]);
-                if (BaselineIndex == -1 && vertices[numpts, 1] == 0)
-                {
-                    BaselineIndex = numpts;
-                }
+                
 				vertices[numpts,2]=double.Parse(text[2]);
 				vertices[numpts,3] = 1.0d;
 				numpts++;						
